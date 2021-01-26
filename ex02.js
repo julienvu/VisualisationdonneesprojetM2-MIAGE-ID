@@ -51,45 +51,71 @@ var initSVGcanvas = function(planetData){
 }
 
 var populateSVGcanvas = function(planetData){
-  //*filtrer mass planete =0  et masse étoile =0*//
-  filteredvalues=planetData.filter(function(d){return d.mass==0;} || function(d){return d.star_mass==0;});
+  //*filtrer mass planete !=0  et(qui s'écrit && en javascript) masse étoile !=0*//
+  filteredvalues=planetData.filter(function(d){return d.mass!=0;} && function(d){return d.star_mass!=0;});
   //*affichage de ce filtrage renvoie les lignes qui vérifient la condition
   //*condition indiquée dans la parenthèse de la méthode filter
   console.log(filteredvalues);
+  //.append(svg) et non append(body)
   var svg = d3.select("body")
             .append("svg")
             .attr("width", 720)
             .attr("height", 720);
   var exoPlanetsGenerator = d3.symbol().type(d3.symbolCircle)
-                       .size(8);
+                       .size(29);
+  var exoPlanetsGenerator1 = d3.symbol().type(d3.symbolTriangle).size(38);
+  var exoPlanetsGenerator2 = d3.symbol().type(d3.symbolCross).size(45);
+  var exoPlanetsGenerator3 = d3.symbol().type(d3.symbolDiamond).size(27);
   console.log(exoPlanetsGenerator);
   //utilisation de d3 pour référencer body et pointer vers le path
-  d3.select("body").selectAll("path")
+  d3.select("svg").selectAll("path")
    //on étudie seulement les données filtrées et non planetData
    .data(filteredvalues)
    .enter()
    .append("path")
-   .attr("d", exoPlanetsGenerator());
-   //updating selections with functions
-  d3.selectAll('rect')
-    .attr('x', function(d, i) {
-      return i * 40;
-  });
-  //change opacity circles
-  //Make a circles
-  svg.append("circle")
-      .attr("cx", 6)
-      .attr("cy", 3)
-      .attr("r", 60)
-      .style("opacity", 1.0)
-      .style("fill", "#f46d43");
+   .style("opacity", 0.3)
+   .style("stroke", function(d){
+        if(d.value < 1 && d.value>30) {return 'purple'} else {return 'pink'}
+    })
+   .style("font-size", "16px")
+   .style("text-decoration", "underline")
 
-  //mouse event
-  d3.selectAll('circle')
-  .on('click', function(d, i) {
-    d3.select('.status')
-      .text('You clicked on circle ' + i);
-  });
+   //utiliser la méthode transform pour translater les points en haut à gauche en bas à droite pour obtenir des pixels
+   .attr("transform", function(d){console.log(d);coordxpixelsx=ctx.xScale(d.star_mass);coordxpixelsy=ctx.yScale(d.mass);return "translate(" + coordxpixelsx + "," + coordxpixelsy + ")";})
+   //faire plusieurs if d est unique pas de d1 ou autre appellation pour l'ajout des motifs
+   .attr("d", function(d){
+        //3 conditions pour autant de type de detection
+        if(d.detection_type=="Primary Transit"){
+          return exoPlanetsGenerator();
+
+        }
+        if(d.detection_type=="Radial Velocity"){
+          return exoPlanetsGenerator1();
+
+        }
+        if(d.detection_type=="Microlensing"){
+          return exoPlanetsGenerator2();
+
+        }
+        //1 condition sur l annee de découverte de la planete
+        if(d.discovered==2012 || d.discovered==2018){
+          return exoPlanetsGenerator3();
+
+        }
+
+   }
+   );
+   //on fait dans un d3.select("svg").append("text") car on ne fait pas de mappage
+   //sur les données mais juste un ajout
+   d3.select("svg").append("text")
+    //positions du text avec .attr("x", 200) et attr("y", 20)
+    .attr("x", 200)
+    .attr("y", 20)
+    .text("Représentation graphique des exos planetes selon la mass et star_mass(ord/abs)")
+    .attr("font-family", "calibri")
+    .attr("font-size", "14px")
+
+
   var x = d3.scaleLinear()
           .domain([20, 150])
           .range([0, 1000]);
@@ -114,23 +140,8 @@ var populateSVGcanvas = function(planetData){
     .domain([5, 100])
     .range(["brown", "steelblue"])
     .interpolate(d3.interpolateHcl);
-
-  // update the element
-  function update(degreAngle) {
-
-    // adjust the text on the range slider
-    d3.select("#degreAngle-value").text(degreAngle);
-    d3.select("#degreAngle").property("value", degreAngle);
-
-    // rotate the text
-    svg.select("text")
-      .attr("transform", "translate(300,150) rotate("+degreAngle+")");
-  }
-
-
-
-
-
+  color1(-0.8); // "rgb(255, 128, 128)"
+  color1(+0.9); // "rgb(128, 192, 128)"
 };
 
 var createViz = function(){
